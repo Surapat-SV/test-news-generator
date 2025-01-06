@@ -50,16 +50,20 @@ with st.sidebar:
         """)
 
 def generate_content(topic):
+    # Access API keys from st.secrets
+    serper_api_key = st.secrets['SERPER_API_KEY']
+    cohere_api_key = st.secrets['COHERE_API_KEY']
+    
+    # Initialize LLM with Cohere API key
     llm = LLM(
         model="command-r",
-        temperature=0.7
+        api_key=cohere_api_key,  # Use Cohere API key from st.secrets
+        temperature=temperature  # Use the temperature set by the user
     )
-# Access SERPER API key from st.secrets
-    serper_api_key = st.secrets['SERPER_API_KEY']
-    
-    # Initialize the search tool with the API key
+
+    # Initialize SerperDevTool with Serper API key
     search_tool = SerperDevTool(api_key=serper_api_key, n_results=10)
-    
+
     # First Agent: Senior Research Analyst
     senior_research_analyst = Agent(
         role="Senior Research Analyst",
@@ -76,7 +80,7 @@ def generate_content(topic):
                 "information accessible and actionable.",
         allow_delegation=False,
         verbose=True,
-        tools=[search_tool],
+        tools=[search_tool],  # Pass the search tool with API key
         llm=llm
     )
 
@@ -148,6 +152,7 @@ def generate_content(topic):
     )
 
     return crew.kickoff(inputs={"topic": topic})
+
 
 # Main content area
 if generate_button:
