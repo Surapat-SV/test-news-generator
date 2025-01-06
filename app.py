@@ -56,9 +56,12 @@ def generate_content(topic):
         model="command-r",
         temperature=0.7
     )
-
-    search_tool = SerperDevTool(n_results=10)
-
+# Access SERPER API key from st.secrets
+    serper_api_key = st.secrets['SERPER_API_KEY']
+    
+    # Initialize the search tool with the API key
+    search_tool = SerperDevTool(api_key=serper_api_key, n_results=10)
+    
     # First Agent: Senior Research Analyst
     senior_research_analyst = Agent(
         role="Senior Research Analyst",
