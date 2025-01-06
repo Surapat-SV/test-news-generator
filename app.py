@@ -8,6 +8,8 @@ from crewai import Agent, Task, Crew, LLM
 from crewai_tools import SerperDevTool
 from dotenv import load_dotenv
 
+st.secrets['SERPER_API_KEY']
+
 # Load environment variables
 load_dotenv()
 
