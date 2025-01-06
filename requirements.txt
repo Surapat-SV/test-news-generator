@@ -2,3 +2,4 @@ streamlit
 crewai
 crewai_tools
 langchain_community
+pysqlite3-binary
