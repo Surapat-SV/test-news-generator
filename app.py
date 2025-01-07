@@ -3,10 +3,10 @@ import sys
 sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 
 import os
-import streamlit as st
 from crewai import Agent, Task, Crew, LLM
 from crewai_tools import SerperDevTool
 from dotenv import load_dotenv
+import streamlit as st
 
 # Load environment variables
 load_dotenv()
@@ -15,31 +15,22 @@ load_dotenv()
 st.set_page_config(page_title="AI News Generator", page_icon="📰", layout="wide")
 
 # Title and description
-st.title("🤖 AI News Generator, powered by CrewAI and Cohere's Command R7B")
+st.title("🤖 AI News Generator, powered by CrewAI and Google Gemini 1.5 Flash")
 st.markdown("Generate comprehensive blog posts about any topic using AI agents.")
 
 # Sidebar
 with st.sidebar:
     st.header("Content Settings")
-    
-    # Make the text input take up more space
     topic = st.text_area(
         "Enter your topic",
         height=100,
         placeholder="Enter the topic you want to generate content about..."
     )
-    
-    # Add more sidebar controls if needed
     st.markdown("### Advanced Settings")
     temperature = st.slider("Temperature", 0.0, 1.0, 0.7)
-    
-    # Add some spacing
     st.markdown("---")
-    
-    # Make the generate button more prominent in the sidebar
     generate_button = st.button("Generate Content", type="primary", use_container_width=True)
-    
-    # Add some helpful information
+
     with st.expander("ℹ️ How to use"):
         st.markdown("""
         1. Enter your desired topic in the text area above
@@ -52,12 +43,12 @@ with st.sidebar:
 def generate_content(topic):
     # Access API keys from st.secrets
     serper_api_key = st.secrets['SERPER_API_KEY']
-    cohere_api_key = st.secrets['COHERE_API_KEY']
-    
-    # Initialize LLM with Cohere API key
+    gemini_api_key = st.secrets['GEMINI_API_KEY']
+
+    # Initialize LLM with Google Gemini 1.5 Flash
     llm = LLM(
-        model="command-r",
-        api_key=cohere_api_key,  # Use Cohere API key from st.secrets
+        model="gemini/gemini-1.5-flash",
+        api_key=gemini_api_key,  # Use Gemini API key from st.secrets
         temperature=temperature  # Use the temperature set by the user
     )
 
@@ -121,7 +112,7 @@ def generate_content(topic):
             Please format with clear sections and bullet points for easy reference.""",
         agent=senior_research_analyst
     )
-    
+
     # Writing Task
     writing_task = Task(
         description=f"""
@@ -144,7 +135,6 @@ def generate_content(topic):
         agent=content_writer
     )
 
-
     # Create Crew
     crew = Crew(
         agents=[senior_research_analyst, content_writer],
@@ -154,7 +144,6 @@ def generate_content(topic):
 
     return crew.kickoff(inputs={"topic": topic})
 
-
 # Main content area
 if generate_button:
     with st.spinner('Generating content... This may take a moment.'):
@@ -162,7 +151,7 @@ if generate_button:
             result = generate_content(topic)
             st.markdown("### Generated Content")
             st.markdown(result)
-            
+
             # Add download button
             st.download_button(
                 label="Download Content",
@@ -175,4 +164,4 @@ if generate_button:
 
 # Footer
 st.markdown("---")
-st.markdown("Built with CrewAI, Streamlit and powered by Cohere's Command R7B")
+st.markdown("Built with CrewAI, Streamlit, and powered by Google Gemini 1.5 Flash")
