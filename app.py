@@ -102,7 +102,7 @@ def generate_content(topic):
 
     # Research Task
     research_task = Task(
-        description=("""
+        description=f"""
             1. Conduct comprehensive research on {topic} including:
                 - Recent developments and news
                 - Key industry trends and innovations
@@ -111,7 +111,7 @@ def generate_content(topic):
             2. Evaluate source credibility and fact-check all information
             3. Organize findings into a structured research brief
             4. Include all relevant citations and sources
-        """),
+        """,
         expected_output="""A detailed research report containing:
             - Executive summary of key findings
             - Comprehensive analysis of current trends and developments
@@ -121,10 +121,10 @@ def generate_content(topic):
             Please format with clear sections and bullet points for easy reference.""",
         agent=senior_research_analyst
     )
-
+    
     # Writing Task
     writing_task = Task(
-        description=("""
+        description=f"""
             Using the research brief provided, create an engaging blog post that:
             1. Transforms technical information into accessible content
             2. Maintains all factual accuracy and citations from the research
@@ -134,7 +134,7 @@ def generate_content(topic):
                 - Compelling conclusion
             4. Preserves all source citations in [Source: URL] format
             5. Includes a References section at the end
-        """),
+        """,
         expected_output="""A polished blog post in markdown format that:
             - Engages readers while maintaining accuracy
             - Contains properly structured sections
@@ -143,6 +143,7 @@ def generate_content(topic):
             - Follows proper markdown formatting, use H1 for the title and H3 for the sub-sections""",
         agent=content_writer
     )
+
 
     # Create Crew
     crew = Crew(
