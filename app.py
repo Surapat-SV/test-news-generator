@@ -62,7 +62,7 @@ def generate_content(topic):
     )
 
     # Initialize SerperDevTool with Serper API key
-    search_tool = SerperDevTool(api_key=serper_api_key, n_results=10)
+    search_tool = SerperDevTool(api_key=serper_api_key, n_results=4)
 
     # First Agent: Senior Research Analyst
     senior_research_analyst = Agent(
