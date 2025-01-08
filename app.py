@@ -1,3 +1,4 @@
+# Import necessary libraries
 __import__('pysqlite3')
 import sys
 sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
@@ -5,26 +6,25 @@ sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 import os
 from crewai import Agent, Task, Crew, LLM
 from crewai_tools import SerperDevTool
-from dotenv import load_dotenv
 import streamlit as st
+from dotenv import load_dotenv
 
-# Load environment variables
+# Load environment variables from Streamlit secrets or .env file
 load_dotenv()
 
-# Streamlit page config
+# Streamlit page configuration
 st.set_page_config(
-    layout="wide", 
-    initial_sidebar_state="expanded", 
-    page_title="SEM Planner - AI Powered App", 
+    layout="wide",
+    initial_sidebar_state="expanded",
+    page_title="AI News Generator - OOP Edition",
     page_icon="🧠"
 )
 
-
 # Title and description
 st.title("🤖 AI News Generator, powered by CrewAI and Google Gemini 1.5 Flash")
-st.markdown("Generate comprehensive blog posts about any topic using AI agents.")
+st.markdown("Generate comprehensive blog posts using an advanced OOP structure for AI agents.")
 
-# Sidebar
+# Sidebar input and settings
 with st.sidebar:
     st.header("Content Settings")
     topic = st.text_area(
@@ -39,134 +39,123 @@ with st.sidebar:
 
     with st.expander("ℹ️ How to use"):
         st.markdown("""
-        1. Enter your desired topic in the text area above
-        2. Adjust the temperature if needed (higher = more creative)
-        3. Click 'Generate Content' to start
-        4. Wait for the AI to generate your article
-        5. Download the result as a markdown file
+        1. Enter your desired topic in the text area above.
+        2. Adjust the temperature (higher = more creative).
+        3. Click 'Generate Content' to start.
+        4. Wait for the AI to generate your article.
+        5. Download the result as a markdown file.
         """)
 
-def generate_content(topic):
-    # Access API keys from st.secrets
-    serper_api_key = st.secrets['SERPER_API_KEY']
-    gemini_api_key = st.secrets['GEMINI_API_KEY']
 
-    # Initialize LLM with Google Gemini 1.5 Flash
-    llm = LLM(
-        model="gemini/gemini-1.5-flash",
-        api_key=gemini_api_key,  # Use Gemini API key from st.secrets
-        temperature=temperature  # Use the temperature set by the user
-    )
+# Define a class-based OOP solution for the content generator
+class ContentGenerator:
+    def __init__(self, topic, temperature):
+        self.topic = topic
+        self.temperature = temperature
+        self.serper_api_key = st.secrets['SERPER_API_KEY']  # Use st.secrets for Serper API key
+        self.gemini_api_key = st.secrets['GEMINI_API_KEY']  # Use st.secrets for Gemini API key
+        self.llm = self._initialize_llm()
+        self.search_tool = self._initialize_search_tool()
 
-    # Initialize SerperDevTool with Serper API key
-    search_tool = SerperDevTool(api_key=serper_api_key, n_results=4)
+    def _initialize_llm(self):
+        """Initialize LLM with Google Gemini 1.5 Flash."""
+        return LLM(
+            model="gemini/gemini-1.5-flash",
+            api_key=self.gemini_api_key,
+            temperature=self.temperature
+        )
 
-    # First Agent: Senior Research Analyst
-    senior_research_analyst = Agent(
-        role="Senior Research Analyst",
-        goal=f"Research, analyze, and synthesize comprehensive information on {topic} from reliable web sources",
-        backstory="You're an expert research analyst with advanced web research skills. "
-                "You excel at finding, analyzing, and synthesizing information from "
-                "across the internet using search tools. You're skilled at "
-                "distinguishing reliable sources from unreliable ones, "
-                "fact-checking, cross-referencing information, and "
-                "identifying key patterns and insights. You provide "
-                "well-organized research briefs with proper citations "
-                "and source verification. Your analysis includes both "
-                "raw data and interpreted insights, making complex "
-                "information accessible and actionable.",
-        allow_delegation=False,
-        verbose=True,
-        tools=[search_tool],  # Pass the search tool with API key
-        llm=llm
-    )
+    def _initialize_search_tool(self):
+        """Initialize SerperDevTool with API key."""
+        return SerperDevTool(api_key=self.serper_api_key, n_results=4)
 
-    # Second Agent: Content Writer
-    content_writer = Agent(
-        role="Content Writer",
-        goal="Transform research findings into engaging blog posts while maintaining accuracy",
-        backstory="You're a skilled content writer specialized in creating "
-                "engaging, accessible content from technical research. "
-                "You work closely with the Senior Research Analyst and excel at maintaining the perfect "
-                "balance between informative and entertaining writing, "
-                "while ensuring all facts and citations from the research "
-                "are properly incorporated. You have a talent for making "
-                "complex topics approachable without oversimplifying them.",
-        allow_delegation=False,
-        verbose=True,
-        llm=llm
-    )
+    def _create_agents(self):
+        """Create and configure AI agents."""
+        senior_research_analyst = Agent(
+            role="Senior Research Analyst",
+            goal=f"Research, analyze, and synthesize comprehensive information on {self.topic} from reliable web sources",
+            backstory="Expert in advanced web research with strong fact-checking and analysis skills.",
+            allow_delegation=False,
+            verbose=True,
+            tools=[self.search_tool],
+            llm=self.llm
+        )
 
-    # Research Task
-    research_task = Task(
-        description=f"""
-            1. Conduct comprehensive research on {topic} including:
-                - Recent developments and news
-                - Key industry trends and innovations
-                - Expert opinions and analyses
-                - Statistical data and market insights
-            2. Evaluate source credibility and fact-check all information
-            3. Organize findings into a structured research brief
-            4. Include all relevant citations and sources
-        """,
-        expected_output="""A detailed research report containing:
-            - Executive summary of key findings
-            - Comprehensive analysis of current trends and developments
-            - List of verified facts and statistics
-            - All citations and links to original sources
-            - Clear categorization of main themes and patterns
-            Please format with clear sections and bullet points for easy reference.""",
-        agent=senior_research_analyst
-    )
+        content_writer = Agent(
+            role="Content Writer",
+            goal="Transform research findings into engaging blog posts while maintaining accuracy",
+            backstory="Specializes in creating engaging, well-structured, and accurate content.",
+            allow_delegation=False,
+            verbose=True,
+            llm=self.llm
+        )
 
-    # Writing Task
-    writing_task = Task(
-        description=f"""
-            Using the research brief provided, create an engaging blog post that:
-            1. Transforms technical information into accessible content
-            2. Maintains all factual accuracy and citations from the research
-            3. Includes:
-                - Attention-grabbing introduction
-                - Well-structured body sections with clear headings
-                - Compelling conclusion
-            4. Preserves all source citations in [Source: URL] format
-            5. Includes a References section at the end
-        """,
-        expected_output="""A polished blog post in markdown format that:
-            - Engages readers while maintaining accuracy
-            - Contains properly structured sections
-            - Includes Inline citations hyperlinked to the original source url
-            - Presents information in an accessible yet informative way
-            - Follows proper markdown formatting, use H1 for the title and H3 for the sub-sections""",
-        agent=content_writer
-    )
+        return senior_research_analyst, content_writer
 
-    # Create Crew
-    crew = Crew(
-        agents=[senior_research_analyst, content_writer],
-        tasks=[research_task, writing_task],
-        verbose=True
-    )
+    def _create_tasks(self, agents):
+        """Create and define tasks for agents."""
+        research_task = Task(
+            description=f"""
+                1. Conduct comprehensive research on {self.topic} including:
+                    - Recent developments and news
+                    - Key industry trends and innovations
+                    - Expert opinions and analyses
+                    - Statistical data and market insights
+                2. Fact-check and organize findings into a structured research brief.
+                3. Include all relevant citations and sources.
+            """,
+            expected_output="""A detailed research report with an executive summary, 
+                key findings, trends, statistics, and citations.""",
+            agent=agents[0]  # Senior Research Analyst
+        )
 
-    return crew.kickoff(inputs={"topic": topic})
+        writing_task = Task(
+            description=f"""
+                Using the research brief provided, create an engaging blog post:
+                1. Transform technical information into accessible content.
+                2. Maintain factual accuracy and citations.
+                3. Include an attention-grabbing introduction, structured body, and compelling conclusion.
+                4. Format content in markdown with inline citations.
+            """,
+            expected_output="""A polished blog post in markdown format with a reference section and hyperlinked citations.""",
+            agent=agents[1]  # Content Writer
+        )
 
-# Main content area
+        return research_task, writing_task
+
+    def generate(self):
+        """Generate content using CrewAI agents."""
+        agents = self._create_agents()
+        tasks = self._create_tasks(agents)
+
+        # Initialize Crew and kickoff tasks
+        crew = Crew(agents=agents, tasks=tasks, verbose=True)
+        return crew.kickoff(inputs={"topic": self.topic})
+
+
+# Main content generation logic
 if generate_button:
-    with st.spinner('Generating content... This may take a moment.'):
-        try:
-            result = generate_content(topic)
-            st.markdown("### Generated Content")
-            st.markdown(result)
+    if topic.strip() == "":
+        st.warning("Please enter a topic to generate content.")
+    else:
+        with st.spinner('Generating content... This may take a moment.'):
+            try:
+                generator = ContentGenerator(topic=topic, temperature=temperature)
+                result = generator.generate()
 
-            # Add download button
-            st.download_button(
-                label="Download Content",
-                data=result.raw,
-                file_name=f"{topic.lower().replace(' ', '_')}_article.md",
-                mime="text/markdown"
-            )
-        except Exception as e:
-            st.error(f"An error occurred: {str(e)}")
+                # Display the generated content
+                st.markdown("### Generated Content")
+                st.markdown(result)
+
+                # Add download button
+                st.download_button(
+                    label="Download Content",
+                    data=result.raw,
+                    file_name=f"{topic.lower().replace(' ', '_')}_article.md",
+                    mime="text/markdown"
+                )
+            except Exception as e:
+                st.error(f"An error occurred: {str(e)}")
 
 # Footer
 st.markdown("---")
