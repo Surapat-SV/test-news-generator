@@ -12,7 +12,13 @@ import streamlit as st
 load_dotenv()
 
 # Streamlit page config
-st.set_page_config(page_title="AI News Generator", page_icon="📰", layout="wide")
+st.set_page_config(
+    layout="wide", 
+    initial_sidebar_state="expanded", 
+    page_title="SEM Planner - AI Powered App", 
+    page_icon="🧠"
+)
+
 
 # Title and description
 st.title("🤖 AI News Generator, powered by CrewAI and Google Gemini 1.5 Flash")
